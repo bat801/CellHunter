@@ -1,0 +1,82 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+*.cache
+*.obj
+*.pdb
+*.exe
+*.dll
+*.nupkg
+*.msi
+*.appx
+
+# Build outputs
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+python_env/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+
+# Data files (слишком большие)
+*.tif
+*.tiff
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.pt
+*.pth
+*.weights
+*.h5
+*.onnx
+
+# Output reports
+*.xlsx
+*.xls
+*.csv
+reports/
+output/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python package management
+poetry.lock
+Pipfile.lock
+
+# Local settings
+appsettings.Local.json
+config.local.yaml
