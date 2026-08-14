@@ -1,0 +1,9 @@
+﻿<Application x:Class="CellHunter.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:utils="clr-namespace:CellHunter.Desktop.Utils"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <utils:BoolToStatusConverter x:Key="BoolToStatus"/>
+    </Application.Resources>
+</Application>

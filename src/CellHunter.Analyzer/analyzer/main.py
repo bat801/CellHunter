@@ -225,7 +225,9 @@ def process_folder(folder_path: str, model_name: str = "cellpose", device: str =
     print(f"📁 Отчет: {excel_path}")
     print(f"{'='*60}\n")
     
+    print("\n===CELLHUNTER_JSON_START===")
     print(json.dumps(output))
+    print("===CELLHUNTER_JSON_END===")
     return output
 
 if __name__ == "__main__":
@@ -266,5 +268,5 @@ if __name__ == "__main__":
         print("="*60 + "\n")
         sys.exit(1)
     
-    print(f"🚀 Запуск анализа папки: {folder}")
+    print(f"Запуск анализа папки: {folder}")
     process_folder(folder, model_name, device)
