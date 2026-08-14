@@ -16,11 +16,21 @@ namespace CellHunter.Desktop.ViewModels
         private double _progressValue;
         private bool _isAnalyzing;
         private ObservableCollection<ImageAnalysisResult> _results = new();
+        private string _selectedModel = "cellpose";
+        private readonly List<string> _availableModels = new() { "cellpose", "yolo" };
+
+        public List<string> AvailableModels => _availableModels;
 
         public string SelectedFolder
         {
             get => _selectedFolder;
             set => SetProperty(ref _selectedFolder, value);
+        }
+
+        public string SelectedModel
+        {
+            get => _selectedModel;
+            set => SetProperty(ref _selectedModel, value);
         }
 
         public string LogMessages
@@ -137,7 +147,8 @@ namespace CellHunter.Desktop.ViewModels
             ProgressValue = 0;
             IsAnalyzing = true;
 
-            await _pythonBridge.RunAnalysisAsync(SelectedFolder);
+            // Передаем выбранную модель
+            await _pythonBridge.RunAnalysisAsync(SelectedFolder, SelectedModel);
         }
 
         private bool CanExecuteCancelAnalysis() => IsAnalyzing;

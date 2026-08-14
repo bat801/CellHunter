@@ -144,12 +144,12 @@ namespace CellHunter.Desktop.Services
                     if (summary != null)
                     {
                         AnalysisCompleted?.Invoke(this, summary);
+                        ProgressMessage?.Invoke(this, $"✅ Получены метаданные: {summary.ProcessedFiles} файлов, {summary.TotalTimeSeconds} сек.");
                     }
                 }
                 catch (Exception ex)
                 {
                     ProgressMessage?.Invoke(this, $"⚠️ Ошибка парсинга JSON: {ex.Message}");
-                    ProgressMessage?.Invoke(this, $"JSON: {_jsonBuffer}");
                 }
                 return;
             }
@@ -160,7 +160,7 @@ namespace CellHunter.Desktop.Services
                 return;
             }
 
-            // Обычные сообщения
+            // Обычные сообщения (логи)
             ProgressMessage?.Invoke(this, e.Data);
         }
 

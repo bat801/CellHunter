@@ -31,6 +31,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Button Content="📁 Выбрать папку" Grid.Column="0" Padding="12,8" 
@@ -47,12 +48,25 @@
                         Background="#4CAF50" Foreground="White" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
 
-                <Button Content="⏹ Отмена" Grid.Column="3" Padding="15,8" Margin="0,0,10,0"
+                <ComboBox Grid.Column="3" Width="120" Margin="0,0,5,0"
+                        ItemsSource="{Binding AvailableModels}"
+                        SelectedItem="{Binding SelectedModel}"
+                        Background="#3D3D5C" Foreground="Black" 
+                        BorderThickness="0" FontWeight="Bold">
+                            <ComboBox.Resources>
+                                <Style TargetType="ComboBoxItem">
+                                    <Setter Property="Background" Value="#3D3D5C"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                </Style>
+                            </ComboBox.Resources>
+                </ComboBox>
+
+                <Button Content="⏹ Отмена" Grid.Column="4" Padding="15,8" Margin="0,0,10,0"
                         Command="{Binding CancelAnalysisCommand}"
                         Background="#E74C3C" Foreground="White" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
 
-                <Button Content="📊 Excel" Grid.Column="4" Padding="15,8"
+                <Button Content="📊 Excel" Grid.Column="5" Padding="15,8"
                         Command="{Binding ExportReportCommand}"
                         Background="#3498DB" Foreground="White" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
@@ -80,9 +94,11 @@
             <!-- Логи -->
             <Border Background="#2D2D44" CornerRadius="8" Padding="10">
                 <ScrollViewer>
-                    <TextBlock Text="{Binding LogMessages}" Foreground="#00FF41" 
-                               FontFamily="Consolas" FontSize="12" 
-                               TextWrapping="Wrap" VerticalAlignment="Top"/>
+                    <TextBox Text="{Binding LogMessages}" Foreground="#00FF41" 
+                             Background="Transparent" FontFamily="Consolas" FontSize="12" 
+                             TextWrapping="Wrap" VerticalAlignment="Top"
+                             IsReadOnly="True" BorderThickness="0"
+                             VerticalScrollBarVisibility="Visible"/>
                 </ScrollViewer>
             </Border>
 
