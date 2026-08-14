@@ -137,14 +137,12 @@ namespace CellHunter.Desktop.Services
             {
                 _collectingJson = false;
 
-                // Парсим накопленный JSON
                 try
                 {
                     var summary = JsonConvert.DeserializeObject<AnalysisSummary>(_jsonBuffer);
                     if (summary != null)
                     {
                         AnalysisCompleted?.Invoke(this, summary);
-                        ProgressMessage?.Invoke(this, $"✅ Получены метаданные: {summary.ProcessedFiles} файлов, {summary.TotalTimeSeconds} сек.");
                     }
                 }
                 catch (Exception ex)

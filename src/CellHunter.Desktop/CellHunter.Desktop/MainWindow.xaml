@@ -45,30 +45,30 @@
 
                 <Button Content="▶ Запуск" Grid.Column="2" Padding="20,8" Margin="0,0,5,0"
                         Command="{Binding StartAnalysisCommand}"
-                        Background="#4CAF50" Foreground="White" BorderThickness="0"
+                        Background="#4CAF50" Foreground="#dbdbdb" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
 
                 <ComboBox Grid.Column="3" Width="120" Margin="0,0,5,0"
                         ItemsSource="{Binding AvailableModels}"
                         SelectedItem="{Binding SelectedModel}"
-                        Background="#3D3D5C" Foreground="Black" 
+                        Background="#3D3D5C" Foreground="#dbdbdb" 
                         BorderThickness="0" FontWeight="Bold">
                             <ComboBox.Resources>
                                 <Style TargetType="ComboBoxItem">
                                     <Setter Property="Background" Value="#3D3D5C"/>
-                                    <Setter Property="Foreground" Value="Black"/>
+                                    <Setter Property="Foreground" Value="#dbdbdb"/>
                                 </Style>
                             </ComboBox.Resources>
                 </ComboBox>
 
                 <Button Content="⏹ Отмена" Grid.Column="4" Padding="15,8" Margin="0,0,10,0"
                         Command="{Binding CancelAnalysisCommand}"
-                        Background="#E74C3C" Foreground="White" BorderThickness="0"
+                        Background="#E74C3C" Foreground="#dbdbdb" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
 
                 <Button Content="📊 Excel" Grid.Column="5" Padding="15,8"
                         Command="{Binding ExportReportCommand}"
-                        Background="#3498DB" Foreground="White" BorderThickness="0"
+                        Background="#3498DB" Foreground="#dbdbdb" BorderThickness="0"
                         FontWeight="Bold" Cursor="Hand"/>
             </Grid>
         </Border>
@@ -97,8 +97,7 @@
                     <TextBox Text="{Binding LogMessages}" Foreground="#00FF41" 
                              Background="Transparent" FontFamily="Consolas" FontSize="12" 
                              TextWrapping="Wrap" VerticalAlignment="Top"
-                             IsReadOnly="True" BorderThickness="0"
-                             VerticalScrollBarVisibility="Visible"/>
+                             IsReadOnly="True" BorderThickness="0"/>
                 </ScrollViewer>
             </Border>
 
@@ -130,7 +129,7 @@
                         <DataGridTextColumn Header="Ядра" Binding="{Binding Count}" Width="60"/>
                         <DataGridTextColumn Header="Ширина" Binding="{Binding Width}" Width="60"/>
                         <DataGridTextColumn Header="Высота" Binding="{Binding Height}" Width="60"/>
-                        <DataGridTextColumn Header="Время, с" Binding="{Binding TimeSeconds}" Width="70"/>
+                        <DataGridTextColumn Header="Время, с" Binding="{Binding TimeSeconds, StringFormat={}{0:F1}}" Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>

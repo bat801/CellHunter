@@ -92,7 +92,7 @@ namespace CellHunter.Desktop.ViewModels
                 IsAnalyzing = false;
                 ProgressValue = 100;
 
-                if (summary.Status == "success")
+                if (summary.Status == "success" && summary.Results != null)
                 {
                     Results.Clear();
                     foreach (var result in summary.Results)
@@ -100,14 +100,14 @@ namespace CellHunter.Desktop.ViewModels
                         Results.Add(result);
                     }
 
-                    // Используем данные из summary
-                    LogMessages += $"\n📁 Отчет сохранен: {summary.ExcelPath}\n";
+                    // Теперь метаданные должны правильно парситься
+                    LogMessages += $"\n📁 Отчет: {summary.ExcelPath}\n";
                     LogMessages += $"📊 Обработано: {summary.ProcessedFiles}/{summary.TotalFiles} файлов\n";
-                    LogMessages += $"⏱️ Время: {summary.TotalTimeSeconds} сек.\n";
+                    LogMessages += $"⏱️ Время: {summary.TotalTimeSeconds:F1} сек.\n";
                 }
-                else
+                else if (summary.Status != "success")
                 {
-                    LogMessages += $"\n❌ Ошибка: {summary.Status}\n";
+                    LogMessages += $"\n❌ Ошибка анализа: {summary.Status}\n";
                 }
             });
         }
