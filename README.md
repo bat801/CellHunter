@@ -140,6 +140,16 @@ dotnet run --project src\CellHunter.Desktop\CellHunter.Desktop\CellHunter.Deskto
 Alternatively, open `src\CellHunter.Desktop\CellHunter.Desktop.sln` in
 Visual Studio 2022 and press **F5**.
 
+Local builds keep NuGet restore data inside the workspace: `NuGet.config`
+redirects the packages folder to `.cache/`, and `scripts\build.ps1`
+additionally points `TEMP`/`TMP` and the NuGet HTTP cache there. The folder is
+ignored by git and can be deleted at any time.
+
+```powershell
+.\scripts\build.ps1                 # dotnet build -c Release
+.\scripts\build.ps1 -Task Publish   # self-contained publish into .cache\publish
+```
+
 ### 3. Analyze a folder
 
 1. Click **Выбрать папку** (*Select folder*) and choose a folder with images.

@@ -21,6 +21,7 @@ x64/
 x86/
 builds/
 publish/
+.cache/
 
 # Python
 __pycache__/
