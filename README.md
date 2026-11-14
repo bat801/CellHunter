@@ -19,6 +19,25 @@ without writing any code.
 
 ---
 
+## Download
+
+Alpha builds are published on the
+[Releases](https://github.com/bat801/CellHunter/releases) page.
+
+The portable archive contains a self-contained WPF executable (no .NET
+installation required), the Python analyzer sources, and `requirements.txt`,
+but not the Python environment itself. Unpack it, create a `venv` in the
+unpacked folder, install the requirements, and start `CellHunter.Desktop.exe`:
+
+```powershell
+cd C:\CellHunter
+py -3.12 -m venv venv
+venv\Scripts\pip install -r requirements.txt
+.\CellHunter.Desktop.exe
+```
+
+---
+
 ## Features
 
 | Capability | Status |
@@ -101,6 +120,10 @@ venv\Scripts\pip install -r requirements.txt
 `requirements.txt` pins a mutually compatible set around Cellpose 3.0.7.
 Cellpose downloads its pretrained nuclei weights on first use, so an internet
 connection is required once.
+
+> Using the portable release archive? Create the environment in the unpacked
+> folder instead of `src\CellHunter.Analyzer` — `requirements.txt` is already
+> next to the executable there.
 
 **GPU support (optional).** The pinned `torch` wheel is CPU-only by default.
 For CUDA acceleration, install the build that matches your driver from

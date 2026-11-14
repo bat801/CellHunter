@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish Windows package
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish desktop application
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          dotnet publish src/CellHunter.Desktop/CellHunter.Desktop/CellHunter.Desktop.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:Version=$version `
+            --output publish
+
+      - name: Assemble portable package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+
+          Copy-Item -Recurse -Path 'src/CellHunter.Analyzer/analyzer' -Destination 'publish/analyzer'
+          Copy-Item -Path 'src/CellHunter.Analyzer/requirements.txt' -Destination 'publish/requirements.txt'
+          Copy-Item -Path 'README.md', 'LICENSE' -Destination 'publish/'
+
+          $zipName = "CellHunter-$version-win-x64.zip"
+          Compress-Archive -Path 'publish/*' -DestinationPath $zipName -CompressionLevel Optimal
+
+          $hash = (Get-FileHash -Path $zipName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $sums = "$hash  $zipName`n"
+          [System.IO.File]::WriteAllText(
+            (Join-Path $PWD 'SHA256SUMS.txt'),
+            $sums,
+            (New-Object System.Text.UTF8Encoding($false))
+          )
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CellHunter ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          prerelease: true
+          files: |
+            CellHunter-*-win-x64.zip
+            SHA256SUMS.txt
