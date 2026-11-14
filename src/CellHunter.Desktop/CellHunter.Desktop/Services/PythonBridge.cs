@@ -35,50 +35,43 @@ namespace CellHunter.Desktop.Services
 
             try
             {
-                // Определяем путь к проекту CellHunter.Analyzer
-                // Относительно текущей сборки (bin/Debug/...)
-                string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-
-                // Поднимаемся на 4 уровня: bin/Debug/net8.0-windows/ -> CellHunter.Desktop/
-                string desktopProjectDir = Path.GetFullPath(Path.Combine(currentDir, @"..\..\..\.."));
-
-                // Поднимаемся еще на уровень до src/
-                string srcDir = Path.GetFullPath(Path.Combine(desktopProjectDir, @".."));
-
-                string analyzerDir = Path.Combine(srcDir, "CellHunter.Analyzer");
-                string pythonPath = Path.Combine(analyzerDir, "venv", "Scripts", "python.exe");
-
-                // Если путь не найден — пробуем абсолютный
-                if (!File.Exists(pythonPath))
+                if (!Directory.Exists(folderPath))
                 {
-                    pythonPath = @"C:\_Projects\WPF\CellHunter\src\CellHunter.Analyzer\venv\Scripts\python.exe";
-                    analyzerDir = @"C:\_Projects\WPF\CellHunter\src\CellHunter.Analyzer";
-                }
-
-                if (!File.Exists(pythonPath))
-                {
-                    ProgressMessage?.Invoke(this, $"❌ Python не найден! Проверьте путь: {pythonPath}");
-                    _isRunning = false;
+                    ReportError($"Папка с изображениями не найдена: {folderPath}");
                     return;
                 }
 
-                var startInfo = new ProcessStartInfo
+                // 1. Ищем каталог анализатора: переменная окружения → рядом с приложением → вверх по дереву репозитория
+                string? analyzerDir = FindAnalyzerDirectory();
+                if (analyzerDir == null)
                 {
-                    FileName = pythonPath,
-                    Arguments = $"-m analyzer.main \"{folderPath}\" --model {model} --{device}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = Encoding.UTF8,  // УЖЕ ЕСТЬ
-                    StandardErrorEncoding = Encoding.UTF8,   // УЖЕ ЕСТЬ
-                    WorkingDirectory = analyzerDir,
-                    EnvironmentVariables =
-                    {
-                        ["PYTHONPATH"] = analyzerDir,
-                        ["PYTHONIOENCODING"] = "utf-8"       // ← ДОБАВИТЬ ЭТУ СТРОКУ
-                    }
-                };
+                    ReportError(
+                        "Не найден Python-анализатор CellHunter (analyzer/main.py)." + Environment.NewLine +
+                        "  Проверено:" + Environment.NewLine +
+                        "    • переменная окружения CELLHUNTER_ANALYZER_DIR" + Environment.NewLine +
+                        $"    • текущий каталог и все родительские: {AppDomain.CurrentDomain.BaseDirectory}" + Environment.NewLine +
+                        "  Решение: запустите приложение из каталога репозитория (src/CellHunter.Analyzer) " +
+                        "или задайте CELLHUNTER_ANALYZER_DIR.");
+                    return;
+                }
+
+                // 2. Ищем, чем запускать: venv → встроенный exe → python из PATH
+                if (!TryResolveRunner(analyzerDir, out var runner))
+                {
+                    ReportError(
+                        "Не найден Python для запуска анализатора." + Environment.NewLine +
+                        "  Проверено:" + Environment.NewLine +
+                        $"    • виртуальные окружения в {analyzerDir}: venv, .venv, env" + Environment.NewLine +
+                        $"    • встроенный анализатор: {Path.Combine(analyzerDir, "CellHunterAnalyzer.exe")}" + Environment.NewLine +
+                        "    • python.exe в PATH" + Environment.NewLine +
+                        "  Создайте окружение и установите зависимости:" + Environment.NewLine +
+                        $"    cd \"{analyzerDir}\"" + Environment.NewLine +
+                        "    python -m venv venv" + Environment.NewLine +
+                        @"    venv\Scripts\pip install -r requirements.txt");
+                    return;
+                }
+
+                var startInfo = CreateStartInfo(runner, analyzerDir, folderPath, model, device);
 
                 _currentProcess = new Process { StartInfo = startInfo };
                 _currentProcess.OutputDataReceived += OnOutputDataReceived;
@@ -93,8 +86,16 @@ namespace CellHunter.Desktop.Services
 
                 await _currentProcess.WaitForExitAsync(_cts.Token);
 
-                ProgressMessage?.Invoke(this, "✅ Анализ завершен");
-                _isRunning = false;
+                if (_currentProcess.ExitCode == 0)
+                {
+                    ProgressMessage?.Invoke(this, "✅ Анализ завершен");
+                }
+                else
+                {
+                    ReportError(
+                        $"Анализатор завершился с кодом {_currentProcess.ExitCode}. " +
+                        "Подробности — в сообщениях выше.");
+                }
             }
             catch (OperationCanceledException)
             {
@@ -107,18 +108,175 @@ namespace CellHunter.Desktop.Services
                     }
                 }
                 catch { }
-                _isRunning = false;
             }
             catch (Exception ex)
             {
-                ProgressMessage?.Invoke(this, $"❌ Ошибка: {ex.Message}");
+                ReportError($"Не удалось запустить анализ: {ex.Message}");
+            }
+            finally
+            {
                 _isRunning = false;
             }
         }
 
         public void CancelAnalysis()
         {
-            _cts?.Cancel();
+            try
+            {
+                _cts?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Анализ уже завершился — отменять нечего.
+            }
+        }
+
+        /// <summary>
+        /// Поднимается от каталога сборки вверх и ищет анализатор:
+        /// сначала рядом с приложением (published), затем в src/CellHunter.Analyzer (dev-запуск).
+        /// </summary>
+        private static string? FindAnalyzerDirectory()
+        {
+            var fromEnv = Environment.GetEnvironmentVariable("CELLHUNTER_ANALYZER_DIR");
+            if (!string.IsNullOrWhiteSpace(fromEnv))
+            {
+                var full = Path.GetFullPath(fromEnv.Trim('"'));
+                if (File.Exists(Path.Combine(full, "analyzer", "main.py")))
+                {
+                    return full;
+                }
+            }
+
+            var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            while (dir != null)
+            {
+                // Анализатор лежит рядом с приложением
+                if (File.Exists(Path.Combine(dir.FullName, "analyzer", "main.py")))
+                {
+                    return dir.FullName;
+                }
+
+                // Исходники в репозитории
+                var inRepo = Path.Combine(dir.FullName, "src", "CellHunter.Analyzer");
+                if (File.Exists(Path.Combine(inRepo, "analyzer", "main.py")))
+                {
+                    return inRepo;
+                }
+
+                dir = dir.Parent;
+            }
+
+            return null;
+        }
+
+        private static bool TryResolveRunner(string analyzerDir, out Runner runner)
+        {
+            // Виртуальные окружения внутри проекта анализатора
+            foreach (var venv in new[] { "venv", ".venv", "env", ".env" })
+            {
+                var candidate = Path.Combine(analyzerDir, venv, "Scripts", "python.exe");
+                if (File.Exists(candidate))
+                {
+                    runner = new Runner(candidate, isPythonModule: true);
+                    return true;
+                }
+            }
+
+            // Явно заданный интерпретатор
+            var explicitPython = Environment.GetEnvironmentVariable("CELLHUNTER_PYTHON");
+            if (!string.IsNullOrWhiteSpace(explicitPython) && File.Exists(explicitPython))
+            {
+                runner = new Runner(explicitPython, isPythonModule: true);
+                return true;
+            }
+
+            // Встроенный PyInstaller-анализатор (README обещает запуск без Python)
+            foreach (var bundled in new[]
+                     {
+                         "CellHunterAnalyzer.exe",
+                         Path.Combine("dist", "CellHunterAnalyzer.exe"),
+                         Path.Combine("analyzer", "CellHunterAnalyzer.exe")
+                     })
+            {
+                var candidate = Path.Combine(analyzerDir, bundled);
+                if (File.Exists(candidate))
+                {
+                    runner = new Runner(candidate, isPythonModule: false);
+                    return true;
+                }
+            }
+
+            // Python из PATH
+            var pythonOnPath = FindOnPath("python.exe") ?? FindOnPath("python");
+            if (pythonOnPath != null)
+            {
+                runner = new Runner(pythonOnPath, isPythonModule: true);
+                return true;
+            }
+
+            runner = null!;
+            return false;
+        }
+
+        private static ProcessStartInfo CreateStartInfo(
+            Runner runner, string analyzerDir, string folderPath, string model, string device)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = runner.FileName,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+                WorkingDirectory = analyzerDir
+            };
+
+            if (runner.IsPythonModule)
+            {
+                startInfo.ArgumentList.Add("-m");
+                startInfo.ArgumentList.Add("analyzer.main");
+                startInfo.EnvironmentVariables["PYTHONPATH"] = analyzerDir;
+                startInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+            }
+
+            // Путь передаётся отдельным аргументом — пробелы и кавычки обрабатываются корректно
+            startInfo.ArgumentList.Add(folderPath);
+            startInfo.ArgumentList.Add("--model");
+            startInfo.ArgumentList.Add(model);
+            startInfo.ArgumentList.Add($"--{device}");
+
+            return startInfo;
+        }
+
+        private static string? FindOnPath(string fileName)
+        {
+            var path = Environment.GetEnvironmentVariable("PATH");
+            if (string.IsNullOrEmpty(path)) return null;
+
+            foreach (var dir in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+            {
+                try
+                {
+                    var candidate = Path.Combine(dir.Trim('"'), fileName);
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    // Некорректная запись в PATH — пропускаем
+                }
+            }
+
+            return null;
+        }
+
+        private void ReportError(string message)
+        {
+            ProgressMessage?.Invoke(this, $"❌ {message}");
         }
 
         private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -137,17 +295,21 @@ namespace CellHunter.Desktop.Services
             {
                 _collectingJson = false;
 
-                try
+                var json = _jsonBuffer.Trim();
+                if (json.Length > 0)
                 {
-                    var summary = JsonConvert.DeserializeObject<AnalysisSummary>(_jsonBuffer);
-                    if (summary != null)
+                    try
                     {
-                        AnalysisCompleted?.Invoke(this, summary);
+                        var summary = JsonConvert.DeserializeObject<AnalysisSummary>(json);
+                        if (summary != null)
+                        {
+                            AnalysisCompleted?.Invoke(this, summary);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    ProgressMessage?.Invoke(this, $"⚠️ Ошибка парсинга JSON: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        ProgressMessage?.Invoke(this, $"⚠️ Ошибка парсинга JSON: {ex.Message}");
+                    }
                 }
                 return;
             }
@@ -172,8 +334,21 @@ namespace CellHunter.Desktop.Services
 
         public void Dispose()
         {
+            _cts?.Cancel();
             _currentProcess?.Dispose();
             _cts?.Dispose();
+        }
+
+        private sealed class Runner
+        {
+            public Runner(string fileName, bool isPythonModule)
+            {
+                FileName = fileName;
+                IsPythonModule = isPythonModule;
+            }
+
+            public string FileName { get; }
+            public bool IsPythonModule { get; }
         }
     }
 }

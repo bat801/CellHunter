@@ -114,14 +114,20 @@ namespace CellHunter.Desktop.ViewModels
 
         private void ParseProgress(string message)
         {
-            if (message.StartsWith("PROGRESS:"))
-            {
-                var parts = message.Split(':');
-                if (parts.Length >= 3 && int.TryParse(parts[1], out int current) && int.TryParse(parts[2], out int total))
-                {
-                    ProgressValue = (double)current / total * 100;
-                }
-            }
+            // Ожидаемый формат: PROGRESS:<текущий>/<всего>:<имя файла>
+            const string prefix = "PROGRESS:";
+            int prefixIndex = message.IndexOf(prefix, StringComparison.Ordinal);
+            if (prefixIndex < 0) return;
+
+            string payload = message.Substring(prefixIndex + prefix.Length);
+            string[] parts = payload.Split(':', 2);
+            string[] numbers = parts[0].Split('/');
+
+            if (numbers.Length != 2) return;
+            if (!int.TryParse(numbers[0], out int current)) return;
+            if (!int.TryParse(numbers[1], out int total) || total <= 0) return;
+
+            ProgressValue = Math.Clamp((double)current / total * 100.0, 0.0, 100.0);
         }
 
         private void ExecuteSelectFolder()
@@ -147,8 +153,16 @@ namespace CellHunter.Desktop.ViewModels
             ProgressValue = 0;
             IsAnalyzing = true;
 
-            // Передаем выбранную модель
-            await _pythonBridge.RunAnalysisAsync(SelectedFolder, SelectedModel);
+            try
+            {
+                // Передаем выбранную модель
+                await _pythonBridge.RunAnalysisAsync(SelectedFolder, SelectedModel);
+            }
+            finally
+            {
+                // Сбрасываем состояние и при ошибке/отмене, иначе кнопка «Запуск» останется заблокированной
+                IsAnalyzing = false;
+            }
         }
 
         private bool CanExecuteCancelAnalysis() => IsAnalyzing;

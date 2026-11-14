@@ -1,8 +1,26 @@
-ultralytics>=8.0.196
-opencv-python==4.9.0.80
-opencv-python-headless>=5.0.0
-numpy>=2.0.0
-pandas>=3.0.0
-openpyxl==3.1.2
-Pillow>=10.1.0
-cellpose>=4.0.0
+# CellHunter Analyzer — Python 3.10–3.12 (Windows x64)
+#
+# РЕАЛЬНАЯ МОДЕЛЬ: Cellpose 3.x, тип "nuclei"
+#   analyzer/main.py → models.CellposeModel(model_type="nuclei", device=...)
+# Cellpose 4.x (Cellpose-SAM) использует другой API и с текущим кодом несовместим,
+# поэтому версия ограничена веткой 3.x.
+#
+# Установка:
+#   python -m venv venv
+#   venv\Scripts\pip install -r requirements.txt
+#
+# Версии согласованы между собой: OpenCV 4.8–4.9 и numba (зависимость Cellpose 3)
+# требуют numpy 1.x, поэтому numpy зафиксирован ниже 2.0. Ставить одновременно
+# opencv-python и opencv-python-headless не нужно — Cellpose уже приносит headless-вариант.
+
+cellpose==3.0.7
+torch>=2.2,<2.6
+numpy>=1.24,<2.0
+opencv-python-headless>=4.8,<4.10
+pandas>=2.0,<3.0
+openpyxl>=3.1,<4.0
+
+# Экспериментальная YOLO-ветка (--model yolo) — по умолчанию НЕ устанавливается:
+# код ждёт models/yolov8n.pt, но стандартный yolov8n обучен на COCO и клетки не детектирует.
+# Для использования нужен собственный обученный вес.
+# ultralytics>=8.1,<9.0
