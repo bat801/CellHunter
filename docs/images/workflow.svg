@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="400" viewBox="0 0 1400 400" role="img" aria-label="CellHunter workflow: image folder, Cellpose segmentation, nuclei count, Excel report">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4CAF50"/>
+    </marker>
+    <style>
+      .card   { fill:#F6F8FA; stroke:#E2E8F0; stroke-width:2; }
+      .title  { font:600 18px 'Segoe UI', Arial, sans-serif; fill:#1E1E2E; }
+      .desc   { font:400 13.5px 'Segoe UI', Arial, sans-serif; fill:#5B6779; }
+      .step   { font:700 12px 'Segoe UI', Arial, sans-serif; fill:#7A879A; letter-spacing:2px; }
+      .band   { fill:#EEF6EF; stroke:#D5E8D8; stroke-width:2; }
+      .bandtx { font:400 14px 'Segoe UI', Arial, sans-serif; fill:#2F5D3A; }
+      .accent { fill:none; stroke:#4CAF50; stroke-width:3; stroke-linejoin:round; }
+      .fill   { fill:#4CAF50; }
+      .thin   { fill:none; stroke:#8FD19B; stroke-width:2; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="400" fill="#FFFFFF"/>
+
+  <!-- 1. folder -->
+  <rect class="card" x="50" y="70" width="280" height="170" rx="18"/>
+  <text class="step" x="78" y="102">STEP 1</text>
+  <path class="accent" d="M78 130 h32 l10 12 h44 a8 8 0 0 1 8 8 v30 a8 8 0 0 1 -8 8 h-86 a8 8 0 0 1 -8 -8 v-42 a8 8 0 0 1 8 -8 z"/>
+  <text class="title" x="78" y="212">Folder of images</text>
+  <text class="desc" x="78" y="236">TIFF, PNG or JPEG, 2D microscopy</text>
+
+  <line x1="336" y1="155" x2="388" y2="155" stroke="#4CAF50" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 2. cellpose -->
+  <rect class="card" x="400" y="70" width="280" height="170" rx="18"/>
+  <text class="step" x="428" y="102">STEP 2</text>
+  <circle class="accent" cx="456" cy="140" r="22"/>
+  <circle class="fill" cx="450" cy="134" r="5"/>
+  <circle class="thin" cx="486" cy="164" r="22"/>
+  <circle class="fill" cx="481" cy="159" r="5"/>
+  <text class="title" x="428" y="212">Cellpose segmentation</text>
+  <text class="desc" x="428" y="236">Nuclei model · runs on CPU or CUDA</text>
+
+  <line x1="686" y1="155" x2="738" y2="155" stroke="#4CAF50" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 3. count -->
+  <rect class="card" x="750" y="70" width="280" height="170" rx="18"/>
+  <text class="step" x="778" y="102">STEP 3</text>
+  <g class="accent">
+    <circle cx="798" cy="132" r="7"/><circle cx="822" cy="146" r="7"/>
+    <circle cx="794" cy="162" r="7"/><circle cx="824" cy="174" r="7"/>
+    <circle cx="850" cy="134" r="7"/><circle cx="854" cy="164" r="7"/>
+  </g>
+  <text class="title" x="778" y="212">Count and measure</text>
+  <text class="desc" x="778" y="236">One count per image, in seconds</text>
+
+  <line x1="1036" y1="155" x2="1088" y2="155" stroke="#4CAF50" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- 4. excel -->
+  <rect class="card" x="1100" y="70" width="280" height="170" rx="18"/>
+  <text class="step" x="1128" y="102">STEP 4</text>
+  <rect class="accent" x="1128" y="122" width="64" height="52" rx="6"/>
+  <line class="accent" x1="1128" y1="140" x2="1192" y2="140"/>
+  <line class="accent" x1="1150" y1="122" x2="1150" y2="174"/>
+  <line class="accent" x1="1170" y1="122" x2="1170" y2="174"/>
+  <text class="title" x="1128" y="212">Excel report</text>
+  <text class="desc" x="1128" y="236">filename, count, size, model, time</text>
+
+  <!-- technology band -->
+  <rect class="band" x="50" y="290" width="1330" height="62" rx="14"/>
+  <text class="bandtx" x="76" y="327">CellHunter.Desktop (WPF)  →  analyzer.main (Python)  →  Cellpose  →  openpyxl  ·  the UI streams progress and shows the result table live</text>
+</svg>

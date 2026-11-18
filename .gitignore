@@ -83,3 +83,7 @@ Pipfile.lock
 # Local settings
 appsettings.Local.json
 config.local.yaml
+
+# README and documentation figures are generated but intentionally versioned
+!docs/images/*.png
+!docs/images/*.gif

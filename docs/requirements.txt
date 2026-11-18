@@ -1,0 +1,11 @@
+# Extra dependencies used only to regenerate the images in docs/images/.
+# The application itself does not need these packages.
+# Install on top of src/CellHunter.Analyzer/requirements.txt:
+#
+#   python -m pip install -r src/CellHunter.Analyzer/requirements.txt \
+#                         -r docs/requirements.txt
+#
+matplotlib>=3.8
+pillow>=10.0
+pandas>=2.0
+openpyxl>=3.1

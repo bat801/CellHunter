@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="CellHunter icon: a nucleus with a nucleolus">
+  <rect width="512" height="512" rx="116" fill="#4CAF50"/>
+  <circle cx="222" cy="300" r="128" fill="none" stroke="#12251A" stroke-width="34"/>
+  <circle cx="222" cy="300" r="34" fill="#12251A"/>
+  <circle cx="366" cy="158" r="48" fill="none" stroke="#12251A" stroke-width="26"/>
+</svg>
