@@ -10,6 +10,7 @@
     <Product>CellHunter</Product>
     <Description>Desktop application for automated cell counting in microscopy images.</Description>
     <RepositoryUrl>https://github.com/bat801/CellHunter</RepositoryUrl>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
