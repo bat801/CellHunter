@@ -1,12 +1,22 @@
 import sys
 import json
 import os
+import warnings
 import torch
 from pathlib import Path
 import cv2
 import pandas as pd
 from datetime import datetime
 import time
+
+# Cellpose calls torch.load without weights_only=True, which prints a long
+# FutureWarning on every model load. It is not actionable for CellHunter users.
+warnings.filterwarnings(
+    "ignore",
+    message=r"You are using `torch\.load` with `weights_only=False`",
+    category=FutureWarning,
+)
+
 
 def check_system():
     """Проверяет систему и возвращает информацию о доступных устройствах"""
