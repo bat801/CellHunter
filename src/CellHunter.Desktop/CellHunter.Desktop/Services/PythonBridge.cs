@@ -235,10 +235,13 @@ namespace CellHunter.Desktop.Services
 
             if (runner.IsPythonModule)
             {
+                // -u keeps stdout unbuffered so progress lines reach the UI live.
+                startInfo.ArgumentList.Add("-u");
                 startInfo.ArgumentList.Add("-m");
                 startInfo.ArgumentList.Add("analyzer.main");
                 startInfo.EnvironmentVariables["PYTHONPATH"] = analyzerDir;
                 startInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+                startInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
             }
 
             // Путь передаётся отдельным аргументом — пробелы и кавычки обрабатываются корректно
